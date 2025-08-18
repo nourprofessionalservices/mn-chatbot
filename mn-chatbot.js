@@ -1,10 +1,12 @@
-/* MN Chatbot: self-installing widget (Carrd/GitHub+jsDelivr friendly) */
+/* MN Chatbot (Carrd/GitHub+jsDelivr friendly) — 3-step capture → intake/WhatsApp prefill */
 (function MN_CHATBOT(){
+  "use strict";
+
   const CFG = {
     avatar: "https://cdn.jsdelivr.net/gh/nourprofessionalservices/Chatbot-avatar@main/dfgdfgdfgfdg.png",
-    wa: "https://wa.me/14164748684?text=Hey%20Mo%2C%20I%27d%20like%20to%20chat%20about%20your%20creative%20services.",
+    waNumber: "14164748684",
     intake: "https://isntthatmomointakeform.carrd.co/",
-    autoBubbleDelayMs: 1000,
+    autoBubbleDelayMs: 900,
     autoBubbleEveryLoad: true
   };
 
@@ -32,13 +34,6 @@
 .mn-btn{flex:1;text-align:center;text-decoration:none;border:0;border-radius:10px;padding:12px 14px;font:14px 'Poppins',sans-serif;cursor:pointer;font-weight:600;transition:all .2s ease}
 .mn-btn.primary{background:#25D366;color:#fff}.mn-btn.primary:hover{background:#1ebe5b}
 .mn-btn.secondary{background:#fff;border:1px solid #ddd;color:#111}.mn-btn.secondary:hover{background:#f0f0f0}
-.mn-card{background:#fff;border:1px solid #eee;border-radius:12px;margin:8px 0;padding:10px 12px}
-.mn-card h4{margin:0 0 6px;font-size:14px;letter-spacing:.2px}
-.mn-price{font-weight:700}
-.mn-feat{display:flex;gap:8px;align-items:center;font-size:14px;margin:6px 0}
-.mn-feat .ico{width:18px;text-align:center}
-.mn-feat.off{color:#9a9a9a}
-.mn-note{font-size:12px;color:#666;margin-top:6px}
 @keyframes mnPulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
 .mn-pulse{animation:mnPulse 700ms ease-in-out 2}
 `;
@@ -61,14 +56,14 @@
 <div class="mn-chat-panel" id="mnChatPanel" role="dialog" aria-label="Contact chat" aria-modal="true">
   <div class="mn-chat-header">Let’s Connect</div>
   <div class="mn-chat-body" id="mnChatBody">
-    <div class="mn-msg">Hey! Ask me anything about videography, webpages, or marketing.</div>
+    <div class="mn-msg">Quick 3-step: 1) What are you looking for? 2) What’s your time expectation? 3) Your name & phone. I’ll prefill the intake for you.</div>
     <div class="mn-input-row">
-      <input id="mnInput" class="mn-input" type="text" placeholder="Type your question…" aria-label="Type your question">
+      <input id="mnInput" class="mn-input" type="text" placeholder="Type your answer…" aria-label="Type your answer">
       <button id="mnSend" class="mn-send">Send</button>
     </div>
     <div class="mn-cta" id="mnCTA">
-      <a class="mn-btn primary" id="mnWA" href="${CFG.wa}" target="_blank" rel="noopener noreferrer">Message on WhatsApp</a>
-      <a class="mn-btn secondary" id="mnIntake" href="${CFG.intake}" target="_blank" rel="noopener noreferrer">Intake Form</a>
+      <a class="mn-btn primary" id="mnWA" href="#" target="_blank" rel="noopener noreferrer">Message on WhatsApp</a>
+      <a class="mn-btn secondary" id="mnIntake" href="${CFG.intake}" target="_blank" rel="noopener noreferrer">Open Intake Form</a>
     </div>
   </div>
   <button class="mn-btn secondary" id="mnClose" style="margin:12px">Close</button>
@@ -76,75 +71,44 @@
     document.body.appendChild(wrap);
   }
 
-  /* ====== Knowledge Base + Utterances ====== */
-  const KB = {
-    web:{label:"Web Design + Ads Setup",tiers:{
-      basic:{price:"$450",includes:{landing:true,intake:true,links:true,menu:false,widgets:false,reviews:false,metaAds:false,googleAds:false}},
-      premium:{price:"$600",includes:{landing:true,intake:true,links:true,menu:true,widgets:true,reviews:true,metaAds:true,googleAds:false}},
-      ultimate:{price:"$850",includes:{landing:true,intake:true,links:true,menu:true,widgets:true,reviews:true,metaAds:true,googleAds:true}}
-    },features:[["landing","Landing page setup"],["intake","Intake/contact form"],["links","Links to existing content"],["menu","Menu / multi-page navigation"],["widgets","Advanced/complicated widgets"],["reviews","Google Reviews display (embed/view)"],["metaAds","Meta Ads setup (Facebook/Instagram)"],["googleAds","Google Ads setup (Search/Display)"]]},
-    promo:{label:"Promo Video (1 video, ~45–60s)",tiers:{
-      basic:{price:"$250",includes:{duration:"45–60s",revision:"1",captions:true,grading:true,vfx:false,sfx:false}},
-      premium:{price:"$350",includes:{duration:"45–60s",revision:"1",captions:true,grading:true,vfx:true,sfx:false}},
-      ultimate:{price:"$450",includes:{duration:"45–60s",revision:"1",captions:true,grading:true,vfx:true,sfx:true}}
-    },features:[["duration","Length"],["revision","Revisions"],["captions","Captions"],["grading","Color grading"],["vfx","VFX"],["sfx","Sound effects"]]},
-    creator:{label:"Creator Package (4 videos, ~45–60s each)",tiers:{
-      basic:{price:"$600",includes:{duration:"45–60s each",revision:"1/video",captions:true,grading:true,vfx:false,sfx:false}},
-      premium:{price:"$800",includes:{duration:"45–60s each",revision:"1/video",captions:true,grading:true,vfx:true,sfx:false}},
-      ultimate:{price:"$1,000",includes:{duration:"45–60s each",revision:"1/video",captions:true,grading:true,vfx:true,sfx:true}}
-    },features:[["duration","Length"],["revision","Revisions"],["captions","Captions"],["grading","Color grading"],["vfx","VFX"],["sfx","Sound effects"]]},
-    realestate:{label:"Real Estate Agent Media",tiers:{
-      basic:{price:"$600",includes:{vertVid:"1 Vertical Video",horizVid:true,photos:"Photos (20)",grading:true,revision:"1",drone:false,captions:true,vfx:false,sfx:false}},
-      premium:{price:"$800",includes:{vertVid:"1 Vertical Video",horizVid:true,photos:"Photos (30)",grading:true,revision:"1",drone:true,captions:true,vfx:false,sfx:false}},
-      ultimate:{price:"$1,000",includes:{vertVid:"2 Vertical Videos",horizVid:true,photos:"Photos (40)",grading:true,revision:"1",drone:true,captions:true,vfx:true,sfx:true}}
-    },features:[["vertVid","Vertical videos"],["horizVid","Horizontal videos"],["photos","Photos"],["grading","Color grading"],["revision","Revisions"],["drone","Drone footage"],["captions","Captions"],["vfx","VFX"],["sfx","Sound effects"]]}
-  };
+  // Conversation capture
+  const STATE = { step: 0, lookingFor: "", timeline: "", name: "", phone: "" };
+  const encode = s => encodeURIComponent(s || "");
+  const waLink = msg => `https://wa.me/${CFG.waNumber}?text=${encode(msg)}`;
+  const validPhone = s => /\+?\d[\d\s\-\(\)]{6,}\d/.test((s||"").trim());
 
-  const UTTERANCES = {
-    services_overview:["what services do you offer","what do you offer","what do you provide","what are your services","how can you help","how can you help me","do you do end to end","can you manage everything","do you have packages","do you work with small businesses","do you work with startups"],
-    web:["do you do web development","can you build a landing page","can you redesign my website","do you set up contact forms","can you add a menu","multi page navigation","can you embed google reviews","can you connect whatsapp","can you integrate my crm","email list integration"],
-    video:["do you film and edit","do you do videography","can you make a promo video","do you add captions","do you do color grading","can you do vfx","sound design","do you shoot vertical videos","can you produce monthly content","do you write scripts","do you provide voiceover"],
-    combined_web_video:["if you build my site can you create the video","can you produce a promo and place it on the landing page","can you shoot product clips and integrate them","can you make banner videos for the homepage","deliver vertical and horizontal for site and social","build the page and run ads with the video","optimize the video for page load","create thumbnails and hero images from video"],
-    marketing_ads:["do you set up meta ads","can you run google ads","do you create ad creatives","do you write ad copy","install tracking pixels","conversions setup","do you help with targeting","optimize campaign","manage ad budgets","share performance reports"],
-    pricing:["how much do you charge","what's the price","pricing","cost","rate","rates","how much is a promo video","package prices","custom quote","what's included in basic","difference between premium and ultimate","discount if i bundle","cad or usd","monthly content rate","$"],
-    turnaround:["how long does a project take","what's the turnaround","turn around time","delivery time","lead time","by next week","deadline","when will it be ready","how fast","rush","expedite","turn-around"],
-    availability:["are you available","when can we start","can we start","start date","availability this week","are you free","book a shoot","booking","schedule","scheduling","earliest opening","weekend or evening"],
-    location:["where are you based","location","are you in gta","in toronto","do you travel","travel fees","can you shoot at our office","do you work remotely","mississauga","brampton","scarborough"],
-    realestate:["do you do real estate","realtor media","listing video","mls video","property video","how many photos","horizontal video for mls","drone footage","captions for listings","light music","twilight photos","floor plans","3d tours","turnaround for listings"],
-    creator:["creator package","four videos","4 videos","monthly content bundle","swap a video for photos","do you include scripts","retainer","how many revisions per video","one location for all four","hooks and on screen text"],
-    promo:["1 minute promo","60 second video","short video","single video","reel","45-60 seconds","vertical and horizontal version","animated text and captions","include logo and brand colors","stock footage if needed","record a voiceover","export 1080p","export 4k"],
-    web_features:["add a multi page menu","advanced widgets","sliders","faq","integrate google reviews","setup intake form","booking form","connect mailchimp","connect hubspot","add meta pixel","add google tag","basic seo","hosting domain help"],
-    process:["what's your process","from brief to delivery","creative brief template","how many review rounds","share drafts before final","how do we share assets","scripts and shot lists","on camera coaching","how do we communicate"],
-    deliverables:["what file formats do you deliver","vertical and horizontal","captions and subtitle files","project files","optimized web video","export for instagram","export for tiktok","export for youtube","thumbnails and cover images","pngs or jpegs sized for site"],
-    policies:["how many revisions","reshoot policy","do i own the final content","licensing for music","licensing limits","sign nda","cancellation policy","refund policy","keep footage","request raw footage"],
-    payment:["do you require a deposit","payment methods","payment plan","do you charge hst","can you work within my budget","travel fee","rush fees","nonprofit discount","startup discount"],
-    contact:["can we chat on whatsapp","where is the intake form","how do i get a quote","schedule an intro call","what info do you need","can i send examples","availability next week if i submit the form","what happens after i submit"]
-  };
-
-  /* ====== Render helpers ====== */
-  function row(label,value){
-    const on=value!==false && value!==0 && value!==null;
-    const text=(typeof value==='string'||typeof value==='number')? value: label;
-    return `<div class="mn-feat ${on?'':'off'}"><span class="ico">${on?'✔︎':'–'}</span><span>${text}</span></div>`;
-  }
-  function renderTier(catName,tierKey,tier,defs){
-    const title=`${catName} — ${tierKey[0].toUpperCase()+tierKey.slice(1)} (<span class="mn-price">${tier.price}</span>)`;
-    const feats=defs.map(([k,l])=>row(l, tier.includes[k] ?? false)).join('');
-    return `<div class="mn-card"><h4>${title}</h4>${feats}</div>`;
-  }
-  function renderCategory(key){
-    const c=KB[key]; if(!c) return '';
-    let html=`<div><strong>${c.label}</strong></div>`;
-    html+=renderTier(c.label,'basic',c.tiers.basic,c.features);
-    html+=renderTier(c.label,'premium',c.tiers.premium,c.features);
-    html+=renderTier(c.label,'ultimate',c.tiers.ultimate,c.features);
-    html+=`<div class="mn-note">For booking, availability, add-ons, or custom scope, please reach out on WhatsApp or fill the intake form for a tailored quote.</div>`;
-    return html;
+  function buildSummary(){
+    return [
+      `What I'm looking for: ${STATE.lookingFor || "-"}`,
+      `Time expectation: ${STATE.timeline || "-"}`,
+      `Name: ${STATE.name || "-"}`,
+      `Phone: ${STATE.phone || "-"}`
+    ].join('\n');
   }
 
-  function norm(s){ return (s||'').toLowerCase().trim(); }
-  function hasAny(text, list){ const t=norm(text); return (list||[]).some(p=>t.includes(p)); }
-  function intentIs(text, key){ return hasAny(text, UTTERANCES[key]||[]); }
+  function updateCTALinks(){
+    const wa = document.getElementById('mnWA');
+    const intake = document.getElementById('mnIntake');
+    const summary = buildSummary();
+    const waMsg = `Hi Mo! 👋\n${summary}`;
+    if (wa) wa.href = waLink(waMsg);
+    if (intake){
+      // Pass into intake via query params (description + name + phone)
+      const url = `${CFG.intake}?desc=${encode(summary)}&name=${encode(STATE.name)}&phone=${encode(STATE.phone)}`;
+      intake.href = url;
+    }
+  }
+
+  function showCTA(pulse){
+    const ctaWrap = document.getElementById('mnCTA');
+    if(!ctaWrap) return;
+    updateCTALinks();
+    ctaWrap.style.display='flex';
+    ctaWrap.querySelectorAll('a').forEach(a=>{
+      a.classList.remove('mn-pulse');
+      if(pulse) a.classList.add('mn-pulse');
+    });
+  }
 
   function addMsg(text, who){
     const body = document.getElementById('mnChatBody');
@@ -152,50 +116,32 @@
     const d=document.createElement('div'); d.className='mn-msg'+(who==='user'?' user':''); d.textContent=text;
     body.insertBefore(d, body.querySelector('.mn-input-row')); body.scrollTop=body.scrollHeight;
   }
-  function addHtml(html){
-    const body = document.getElementById('mnChatBody');
-    if(!body) return;
-    const d=document.createElement('div'); d.className='mn-msg'; d.innerHTML=html;
-    body.insertBefore(d, body.querySelector('.mn-input-row')); body.scrollTop=body.scrollHeight;
-  }
-  function showCTA(pulse){
-    const ctaWrap = document.getElementById('mnCTA');
-    if(!ctaWrap) return;
-    ctaWrap.style.display='flex';
-    ctaWrap.querySelectorAll('a').forEach(a=>{ a.classList.remove('mn-pulse'); if(pulse) a.classList.add('mn-pulse'); });
+
+  function askNext(){
+    const q = [
+      "Great — what are you looking for? (e.g., 1-min promo video, landing page, creator package, real estate media)",
+      "Awesome. What’s your time expectation? (date or range)",
+      "Got it. What’s your full name?",
+      "Thanks! What’s the best phone number to reach you?"
+    ];
+    if (STATE.step>=1 && STATE.step<=4) addMsg(q[STATE.step-1], 'bot');
   }
 
-  function answer(q){
-    if (intentIs(q,'turnaround')) return { text:"It depends on the package and scope. It’s best we chat about your project so I can give you a clear estimate.", cta:true, pulse:true };
-    if (intentIs(q,'availability')) return { text:"I’d love to check availability and get you started. Please reach out on WhatsApp or share your details in the intake form, and I’ll confirm next steps.", cta:true, pulse:true };
-
-    if (intentIs(q,'combined_web_video')){
-      return { html:`<div class="mn-card"><h4>Site + Video? Absolutely.</h4>
-            <div class="mn-feat"><span class="ico">✔︎</span><span>Build landing page + on-brand promo video</span></div>
-            <div class="mn-feat"><span class="ico">✔︎</span><span>Above-the-fold placement, optimized for fast load</span></div>
-            <div class="mn-feat"><span class="ico">✔︎</span><span>Vertical & horizontal cuts + thumbnails/hero images</span></div>
-            <div class="mn-feat"><span class="ico">✔︎</span><span>Optional: Launch Meta/Google Ads</span></div></div>
-            ${renderCategory('web')}${renderCategory('promo')}`, cta:true, pulse:true };
+  function handleStepInput(input){
+    const t = (input||"").trim();
+    if (STATE.step===1){ STATE.lookingFor = t; STATE.step=2; askNext(); return; }
+    if (STATE.step===2){ STATE.timeline = t; STATE.step=3; askNext(); return; }
+    if (STATE.step===3){ STATE.name = t; STATE.step=4; askNext(); return; }
+    if (STATE.step===4){
+      if (!validPhone(t)){ addMsg("That doesn’t look like a phone number. Try including the area code (e.g., 416-555-1234).", 'bot'); return; }
+      STATE.phone = t; STATE.step=5;
+      addMsg("Perfect. I’ll prefill the intake form with this info. If I can’t directly answer here, use the buttons below and I’ll follow up shortly.", 'bot');
+      showCTA(true);
+      return;
     }
-
-    if (intentIs(q,'web'))        return { html:renderCategory('web'), cta:true };
-    if (intentIs(q,'promo'))      return { html:renderCategory('promo'), cta:true, pulse:true };
-    if (intentIs(q,'creator'))    return { html:renderCategory('creator'), cta:true };
-    if (intentIs(q,'realestate')) return { html:renderCategory('realestate'), cta:true };
-
-    if (intentIs(q,'video'))         return { text:"Yes — I handle videography: shooting, editing, captions, color grading, VFX/SFX, and both vertical & horizontal formats.", cta:true };
-    if (intentIs(q,'marketing_ads')) return { text:"Yes — Meta & Google Ads setup, pixels/GTAG, targeting, creatives, and optimization.", cta:true };
-    if (intentIs(q,'web_features'))  return { text:"Yes — menus, advanced widgets, Google Reviews, intake/booking forms, pixels/tags, and basic SEO. I’ll guide hosting & domain setup too.", cta:true };
-    if (intentIs(q,'process'))       return { text:"Flow: brief → script/shot list → production → first cut → revisions → final. Drafts shared and comms tight.", cta:true };
-    if (intentIs(q,'deliverables'))  return { text:"Deliverables: 9:16 & 16:9 videos, caption files, optimized web video, platform-ready exports, thumbnails, and site-sized PNG/JPEGs.", cta:true };
-    if (intentIs(q,'policies'))      return { text:"Standard: defined revisions per package, ownership of final exports, licensed music/footage, NDA on request. Raw/reshoot by arrangement.", cta:true };
-    if (intentIs(q,'payment'))       return { text:"Deposit required, common payment methods, HST applies. Travel/rush fees as needed; nonprofit/startup discounts can be discussed.", cta:true };
-    if (intentIs(q,'location'))      return { text:"I’m based in the GTA and travel across the region. Remote web/ads work available.", cta:true };
-    if (intentIs(q,'services_overview')) return { text:"I offer scriptwriting, video shooting, video editing, webpage setup, and Meta/Google Ads. GTA-based, bundle-friendly packages.", cta:true };
-    if (intentIs(q,'pricing'))       return { text:"Tell me which package (Web, Promo, Creator, or Real Estate) — or tap WhatsApp / Intake and I’ll tailor a quote.", cta:true, pulse:true };
-    if (intentIs(q,'contact'))       return { text:"Tap WhatsApp for a quick chat or use the intake form to share details—I'll follow up with next steps.", cta:true, pulse:true };
-
-    return { text:"Ask about Web design, Promo video (incl. 1-minute videos), the Creator 4-video bundle, or Real Estate media — I’ll share details and next steps.", cta:true };
+    // After capture, nudge to CTA
+    addMsg("Use WhatsApp or the Intake Form and I’ll confirm next steps.", 'bot');
+    showCTA(false);
   }
 
   function hookEvents(){
@@ -221,23 +167,25 @@
     function handleSend(){
       const q=input.value; if(!q) return;
       addMsg(q,'user'); input.value='';
-      const res=answer(q);
-      if(res?.html) addHtml(res.html); else addMsg(res.text||'','bot');
-      if(res?.cta) showCTA(!!res?.pulse);
+      if (STATE.step>=1 && STATE.step<=5){ handleStepInput(q); return; }
+      if (STATE.step===0){ STATE.step=1; STATE.lookingFor=q; STATE.step=2; askNext(); return; }
     }
 
     openBtn.addEventListener('click', ()=>{
       const vis = panel.style.display==='flex';
       panel.style.display = vis ? 'none' : 'flex';
       hello.classList.remove('show');
-      if(!vis){ setTimeout(()=> input?.focus(), 150); }
+      if(!vis){
+        setTimeout(()=> input?.focus(), 150);
+        if (STATE.step===0){ STATE.step=1; askNext(); }
+      }
     });
     openBtn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') openBtn.click(); });
     closeBtn.addEventListener('click', ()=> panel.style.display='none');
     send.addEventListener('click', handleSend);
     input.addEventListener('keydown', e=>{ if(e.key==='Enter') handleSend(); });
 
-    // bubble behavior
+    // hello bubble
     function showHelloAuto(){
       if (!CFG.autoBubbleEveryLoad && sessionStorage.getItem('mnHelloShown')) return;
       setTimeout(()=>{
@@ -251,13 +199,6 @@
     showHelloAuto();
   }
 
-  function boot(){
-    injectCSS();
-    injectHTML();
-    hookEvents();
-    console.log('MN chatbot loaded via external script ✅');
-  }
-
-  // If a builder shoved us into <head>, wait for DOM.
+  function boot(){ injectCSS(); injectHTML(); hookEvents(); console.log('MN chatbot loaded ✅'); }
   ready(boot);
 })();
